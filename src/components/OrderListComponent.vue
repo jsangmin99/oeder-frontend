@@ -64,7 +64,7 @@ export default {
   },
   async created() {
     if (this.isAdmin) {
-      const response = await axios.get(`${process.env.VUE_APP_API_BASE_URI}/order/list`);
+      const response = await axios.get(`${process.env.VUE_APP_API_BASE_URI}/member-service/order/list`);
       this.orderList = response.data.result.content
     } else {
       const response = await axios.get(`${process.env.VUE_APP_API_BASE_URI}/order/myorders`);

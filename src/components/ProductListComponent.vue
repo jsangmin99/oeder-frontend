@@ -20,7 +20,8 @@
       </v-col>
 
       <v-col cols="auto" v-if="!isAdmin" :style="{marginTop:'10px'}">
-        <v-btn class="mr-2" style="background-color:aliceblue;">🛒 장바구니</v-btn>
+
+        <v-btn @click="addCart" class="mr-2" style="background-color:aliceblue;">🛒 장바구니</v-btn>
         <v-btn @click="createOrder" style="background-color:aliceblue;">🪄 주문하기</v-btn>
       </v-col>
 
@@ -76,8 +77,12 @@
 
 <script>
 import axios from 'axios';
+import {mapGetters} from 'vuex';
 export default{
   props: ['isAdmin', 'pageTitle'],
+  computed:{
+    ...mapGetters(['getProductsInCart'])
+  },
   data(){
     return{
       searchType: 'optional',
@@ -137,7 +142,7 @@ export default{
         // localhost:8080/product/list?category=fruits&size=5&page=0
         // localhost:8080/product/list?name=cherry&size=5&page=0
         // 위와 같이 파라미터로 전달. 우리는 백엔드 서버에서 ModelAttribute 가 생략됐을 뿐, 모델로 받고 있는 것.
-        const response = await axios.get(`${process.env.VUE_APP_API_BASE_URI}/product/list`, {params}); // url 에 ? 달고 들어가야 됨.
+        const response = await axios.get(`${process.env.VUE_APP_API_BASE_URI}/product-service/product/list`, {params}); // url 에 ? 달고 들어가야 됨.
         const additionalData = response.data.result.content.map(p=>({...p, quantity:0}));
         if (additionalData.length === 0) {
           this.isLastPage = true;
@@ -170,6 +175,17 @@ export default{
         this.loadProduct();
       }
     },
+    addCart(){
+      const orderProducts = Object.keys(this.selected).filter(key=>this.selected[key]) // 객체에서 key 값 뽑아내기. filter -> true 인 key 값만 뽑아내겠다 !
+          .map(key=>{
+            const product = this.productList.find(p => p.id == key);
+            return {id:product.id, name:product.name, quantity:product.quantity};
+          });
+      orderProducts.forEach(p => this.$store.dispatch('addCart', p));
+      console.log(this.getProductsInCart);
+      // window.location.reload();
+
+    },
     async createOrder(){
       const orderProducts = Object.keys(this.selected).filter(key=>this.selected[key]) // 객체에서 key 값 뽑아내기. filter -> true 인 key 값만 뽑아내겠다 !
           .map(key=>{
@@ -184,9 +200,9 @@ export default{
         console.log("주문이 취소되었습니다.");
       }
       try{
-        await axios.post(`${process.env.VUE_APP_API_BASE_URI}/order/create`, orderProducts);
+        await axios.post(`${process.env.VUE_APP_API_BASE_URI}/order-service/order/create`, orderProducts);
         alert("주문 완료 !")
-        window.location.reload();
+        // this.clearCart();
       }
       catch(e){
         console.log(e);

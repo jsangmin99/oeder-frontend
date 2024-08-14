@@ -84,7 +84,7 @@ export default {
           }
         }
         console.log(registerData.address.city);
-        await axios.post(`${process.env.VUE_APP_API_BASE_URI}`+'/member/create', registerData)
+        await axios.post(`${process.env.VUE_APP_API_BASE_URI}`+'/member-service/member/create', registerData)
         this.$router.push({path: '/login'});
       } catch (error) {
         const errorMessage = error.response.data.status_message;
